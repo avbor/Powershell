@@ -51,11 +51,13 @@ Param (
 function CreateFiles ($dArr, $path) {
     $job = {
         param($arr,$pth)
+        $crCount = 0
         foreach ($num in $arr) {
             try {$null = New-Item -Path $pth -Name ([string]$num + ".txt") -ItemType "file" -Value $num -Force -ErrorAction Stop}
             catch {Write-Output $_.Exception.Message; Write-Output "Exit!"; exit}
+            $crCount++
         }
-        Write-Output ("`tCreated " + $arr.Count + " files")
+        Write-Output ("`t" + $crCount + " files created")
     }
     foreach ($mil in $dArr) {
         $null = Start-Job -ScriptBlock $job -ArgumentList ($mil, $path)
