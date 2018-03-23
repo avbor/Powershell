@@ -53,9 +53,25 @@ function CreateFiles ($dArr, $path) {
         param($arr,$pth)
         $crCount = 0
         foreach ($num in $arr) {
-            try {$null = New-Item -Path $pth -Name ([string]$num + ".txt") -ItemType "file" -Value $num -Force -ErrorAction Stop}
-            catch {Write-Output $_.Exception.Message; Write-Output "Exit!"; exit}
-            $crCount++
+            # fine tune: $retries - number of attempts to create the file; $wTime - delay between attempts in milliseconds #
+            $retries = 3; $wTime = 500
+            # # #
+            $retrycount = 0; $completed = $false
+            while (!$completed) {
+                try {
+                    $null = New-Item -Path $pth -Name ([string]$num + ".txt") -ItemType "file" -Value $num -Force -ErrorAction Stop
+                    $completed = $true
+                    $crCount++
+                }
+                catch {
+                    if ($retrycount -ge $retries) {
+                        Write-Output ($_.Exception.Message).TrimEnd()
+                        Write-Output ("Created " + $crCount + " files (last attempt was made " + $retrycount + " times).`n")
+                        exit
+                    }
+                    else {$retrycount++; Start-Sleep -Milliseconds $wTime}
+                }
+            }
         }
         Write-Output ("`t" + $crCount + " files created")
     }
